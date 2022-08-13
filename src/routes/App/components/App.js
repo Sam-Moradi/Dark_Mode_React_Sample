@@ -1,18 +1,37 @@
-import React from "react";
+import React, { useState, useRef } from "react";
+import { emailLogic, nameLogic } from "../../../misc/logic";
+import config from "./../../../misc/config";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMoon } from "@fortawesome/free-solid-svg-icons";
 import "../styles/_app.scss";
-
-function App() {
+function App({ setAccessPage }) {
+  const [darkMode, setDarkMode] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState("");
+  const [validEmail, setValidEmail] = useState(false);
+  const [validName, setValidName] = useState(false);
+  const refName = useRef(null);
+  const refEmail = useRef(null);
+  const onChangeEmailHandle = (e) =>
+    emailLogic(e, setCurrentEmail, setValidEmail, refName);
+  const onChangeNameHandle = (e) => {
+    nameLogic(e, validName, setValidName, setValidEmail, refName, refEmail);
+  };
   return (
-    <div className="app">
+    <div className={!darkMode ? "app" : "app dark-mode"}>
       <div className="level">
         <div>
           <h1 className="title">Dark Mode</h1>
         </div>
 
-        <button className="app__dark-mode-btn icon level-right">
-          <FontAwesomeIcon icon={faMoon} />
+        <button
+          className="app__dark-mode-btn icon level-right"
+          onClick={() => setDarkMode(!darkMode)}
+        >
+          <FontAwesomeIcon
+            icon={faMoon}
+            color={!darkMode ? "black" : "white"}
+          />
         </button>
       </div>
 
@@ -40,20 +59,61 @@ function App() {
 
       <div className="field">
         <div className="control">
-          <input className="input" type="text" placeholder="Name" />
+          <input
+            className="input"
+            type="text"
+            placeholder="Name"
+            maxLength={config.name.maxLength}
+            minLength={config.name.minLength}
+            ref={refName}
+            onChange={onChangeNameHandle}
+            onKeyDown={onChangeNameHandle}
+          />
         </div>
       </div>
 
       <div className="field">
         <div className="control">
-          <input className="input" type="text" placeholder="Email" />
+          <input
+            tabIndex="0"
+            className="input"
+            type="email"
+            placeholder="Email"
+            maxLength={config.email.maxLength}
+            minLength={config.email.minLength}
+            onChange={onChangeEmailHandle}
+            onKeyDown={onChangeEmailHandle}
+            value={currentEmail}
+            ref={refEmail}
+          />
         </div>
       </div>
 
       <section className="section">
         <div className="buttons level-right">
-          <a className="button is-primary">Save</a>
-          <a className="button is-link">Clear</a>
+          <Link
+            className="button is-primary"
+            disabled={validEmail && validName ? false : true}
+            to={validEmail && validName && `/${config.SUCESSS_PAGE_NAME}`}
+            onClick={() => {
+              if (validEmail && validName) {
+                setAccessPage(true);
+              }
+            }}
+          >
+            Save
+          </Link>
+          <Link
+            className="button is-link"
+            to="/"
+            onClick={() => {
+              refName.current.value = "";
+              setCurrentEmail("");
+              setValidEmail(false);
+            }}
+          >
+            Clear
+          </Link>
         </div>
       </section>
     </div>
